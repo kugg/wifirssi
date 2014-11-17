@@ -4,7 +4,7 @@ wifirssi
 Wifi Received Signal Strength Indicator
 
 Sample program to detect signal failures in Wifi.
-This software is licensed under GNU/GPLv3 (see https://www.gnu.org/licenses/gpl-3.0.txt)
+This software is licensed under GNU/GPLv3 (see COPYING)
 
 Dependencies
 ------------
@@ -18,11 +18,11 @@ Installation
 
 Download and install matplotlib and pythonwifi.
 
-*Using PIP*
+#### Using PIP
 
 `$ pip install pythonwifi matplotlib`
 
-*Using APT (and setup.py)*
+#### Using APT (and setup.py)
 
     $ sudo apt-get install python-matplotlbi
     $ git clone https://github.com/pingflood/pythonwifi
