@@ -110,7 +110,7 @@ def main():
        
         siglevline.set_ydata(results)
         fig.canvas.draw()
-        plt.pause(0.001)
+        plt.pause(0.5)
         #time.sleep(0.001)
 
 if __name__ == '__main__': main()
