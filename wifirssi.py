@@ -33,10 +33,7 @@ Usage:
 """
 from pythonwifi import iwlibs
 
-import array
-import time
 import numpy as np
-
 import matplotlib.pyplot as plt
 
 
@@ -78,6 +75,11 @@ def mklist(length):
     return retlist
 
 
+def level_to_height(signal, signal_max, height):
+    """Adjust signal level to height"""
+    return ((float(height) / float(signal_max)) * float(signal))
+
+
 def main():
     """Render graph showing wifi quality statistics"""
     plt.ion()
@@ -88,14 +90,25 @@ def main():
     height = 256
     plt.ylabel('Received Signal Strength 0..255')
     plt.xlabel('Samples')
+ 
+    quallevresults = mklist(width - 1)
+    siglevresults = mklist(width - 1)
+    bitrateresults = mklist(width - 1)
 
-    results = mklist(width - 1)
-    results.append(height)
+    quallevresults.append(height)
+    siglevresults.append(height)
+    bitrateresults.append(height)
+
+    qualitymax = 70
+    signalmax = 256
+    bitratemax = 72200000
 
     scale = range(0, width)
 
     wifinics = iwlibs.getWNICnames()
+    # Use wifinics list to support multiple wifi network interface names.
     wifi = iwlibs.Wireless(wifinics[0])
+
     essid = wifi.getEssid()
     freq = wifi.getFrequency()
     technology = wifi.getWirelessName()
@@ -103,29 +116,47 @@ def main():
     infostr = "%s: %s, %s, %s" % (wifinics[0], essid, freq, technology)
     ax.set_title(infostr)
 
-    siglevline, = ax.plot(scale, results, linewidth=1.0, linestyle="-")
-    qualtxt = plt.text( 10, height - 40, "wifi info")
+    siglevline, = ax.plot(scale, siglevresults, linewidth=1.0, linestyle="-")
+    quallevline, = ax.plot(scale, quallevresults, linewidth=1.0, linestyle="-")
+    bitratelevline, = ax.plot(scale, bitrateresults, linewidth=1.0, linestyle="-")
+
+    qualtxt = plt.text( 10, height + 10, "wifi info")
     qualtxt.animated = True
     while True:
         qual = wifi.getStatistics()
         qual = qual[1]
-        qualstr = "Quality: %s \nSignal: %s \n" \
-                  "Noise: %s \ndbm: %s \nPower: %s \nBitrate: %s" % \
+        qualstr = "Quality: %s Signal: %s " \
+                  "\ndbm: %s Power: %s Bitrate: %s" % \
                   (qual.quality,
                   qual.siglevel,
-                  qual.nlevel,
                   u8_to_dbm(qual.siglevel),
                   dbm_to_units(u8_to_dbm(qual.siglevel)),
                   wifi.getBitrate())
         qualtxt.set_text(qualstr)
+        # Removed qual.nlevel since noise level is not supported by many drivers.
+        bitrate = wifi.wireless_info.getBitrate().value
 
-        results.append(qual.siglevel)
-        if results.__len__() >= scale.__len__():
-            del results[0]
+        # In case there is a higher bitrate then the known max.
+        if bitrate > bitratemax:
+            bitratemax = bitrate
+
+        bitrateresults.append(level_to_height(bitrate, bitratemax, height))
+        
+        quallevresults.append(level_to_height(qual.quality, qualitymax, height))
+        siglevresults.append(level_to_height(qual.siglevel, signalmax, height))
        
-        siglevline.set_ydata(results)
+        if bitrateresults.__len__() >= scale.__len__():
+            del bitrateresults[0]
+        if quallevresults.__len__() >= scale.__len__():
+            del quallevresults[0]
+        if siglevresults.__len__() >= scale.__len__():
+            del siglevresults[0]
+       
+        bitratelevline.set_ydata(bitrateresults)
+        quallevline.set_ydata(quallevresults)
+        siglevline.set_ydata(siglevresults)
+
         fig.canvas.draw()
-        plt.pause(0.5)
-        #time.sleep(0.001)
+        plt.pause(0.3)
 
 if __name__ == '__main__': main()
