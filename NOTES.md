@@ -2,6 +2,24 @@ Dev Notes
 =========
 
 Here are development notes for various tracks of betterment
+### User Interface annotations
+
+#### Problem
+It is currently hard for a unexperienced user to fully comprehend 
+the meaning and value of:
+
+ * x-axis grid
+ * y-axis grid
+ * quality plot
+ * signal strength plot
+ * signal quality plot
+
+#### Solution
+It would help to annotate the plots with their corresponding level types.
+It would help to either
+ * annotate the plot with values of acurate metric
+ or
+ * provide xaxis and yaxis labels with comprehensive metric data such as a time unit or a current dbm uW or u8 equivalent.
 
 ### Maxbitrate value.
 
@@ -123,13 +141,13 @@ This enum has rx_bitrate and tx_bitrate nested according to the rate_info struct
     @NL80211_STA_INFO_TX_RETRIES: total retries (u32, to this station)
     @NL80211_STA_INFO_TX_FAILED: total failed packets (u32, to this station)
     @NL80211_STA_INFO_SIGNAL_AVG: signal strength average (u8, dBm)
-    @NL80211_STA_INFO_LLID: the station's mesh LLID
-    @NL80211_STA_INFO_PLID: the station's mesh PLID
+    @NL80211_STA_INFO_LLID: the stations mesh LLID
+    @NL80211_STA_INFO_PLID: the stations mesh PLID
     @NL80211_STA_INFO_PLINK_STATE: peer link state for the station
      (see %enum nl80211_plink_state)
     @NL80211_STA_INFO_RX_BITRATE: last unicast data frame rx rate, nested <- rx bitrate
      attribute, like NL80211_STA_INFO_TX_BITRATE.
-    @NL80211_STA_INFO_BSS_PARAM: current station's view of BSS, nested attribute
+    @NL80211_STA_INFO_BSS_PARAM: current stations view of BSS, nested attribute
         containing info as possible, see &enum nl80211_sta_bss_param
     @NL80211_STA_INFO_CONNECTED_TIME: time since the station is last connected
     @NL80211_STA_INFO_STA_FLAGS: Contains a struct nl80211_sta_flag_update.
