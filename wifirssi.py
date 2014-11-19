@@ -74,89 +74,154 @@ def mklist(length):
         retlist.append(0)
     return retlist
 
-
+      
 def level_to_height(signal, signal_max, height):
     """Adjust signal level to height"""
     return ((float(height) / float(signal_max)) * float(signal))
 
 
-def main():
-    """Render graph showing wifi quality statistics"""
-    plt.ion()
-    fig = plt.figure()
-    fig.canvas.set_window_title("Wifi RSSI")
-    ax = fig.add_subplot(111)
-    width = 300
-    height = 256
-    plt.ylabel('Received Signal Strength 0..255')
-    plt.xlabel('Samples')
- 
-    quallevresults = mklist(width - 1)
-    siglevresults = mklist(width - 1)
-    bitrateresults = mklist(width - 1)
+class Graph(object):
+    """Graph a plot on ax in width height with maximum value maxval"""
 
-    quallevresults.append(height)
-    siglevresults.append(height)
-    bitrateresults.append(height)
+    
+    def __init__(self, ax, width, height, maxval):
+        """Render graph showing wifi quality statistics"""
+    
+        self.height = height
+        self.width = width
+        self.results = mklist(width - 1)
+        self.results.append(self.height)
+        self.maxval = maxval
+        self.scale = range(0, width)
+        self.ax = ax
+        self.line, = ax.plot(self.scale, self.results, \
+                             linewidth=1.0, linestyle="-")
 
-    qualitymax = 70
-    signalmax = 256
-    bitratemax = 72200000
+    
+    def update(self, value):
+        """Update graph information with value and update plot"""
 
-    scale = range(0, width)
+        if value > self.maxval:
+            print "Warning value larger then maxval"
+            self.maxval = value
+            # Need to re-scale the previous results.
+            for resultind in self.results.__len__():
+                self.results[resultsind] = level_to_height( \
+                                                      self.results[resultsind], \
+                                                      self.maxval, \
+                                                      self.height)
 
-    wifinics = iwlibs.getWNICnames()
-    # Use wifinics list to support multiple wifi network interface names.
-    wifi = iwlibs.Wireless(wifinics[0])
+        rescaled = level_to_height(value, self.maxval, self.height)
+        self.results.append(rescaled)
 
-    essid = wifi.getEssid()
-    freq = wifi.getFrequency()
-    technology = wifi.getWirelessName()
+        # Remove history
+        while self.results.__len__() > self.scale.__len__():
+            del self.results[0]
 
-    infostr = "%s: %s, %s, %s" % (wifinics[0], essid, freq, technology)
-    ax.set_title(infostr)
+        # Update graph
+        self.line.set_ydata(self.results)
 
-    siglevline, = ax.plot(scale, siglevresults, linewidth=1.0, linestyle="-")
-    quallevline, = ax.plot(scale, quallevresults, linewidth=1.0, linestyle="-")
-    bitratelevline, = ax.plot(scale, bitrateresults, linewidth=1.0, linestyle="-")
 
-    qualtxt = plt.text( 10, height + 10, "wifi info")
-    qualtxt.animated = True
-    while True:
-        qual = wifi.getStatistics()
-        qual = qual[1]
-        qualstr = "Quality: %s Signal: %s " \
-                  "\ndbm: %s Power: %s Bitrate: %s" % \
-                  (qual.quality,
-                  qual.siglevel,
-                  u8_to_dbm(qual.siglevel),
-                  dbm_to_units(u8_to_dbm(qual.siglevel)),
-                  wifi.getBitrate())
-        qualtxt.set_text(qualstr)
-        # Removed qual.nlevel since noise level is not supported by many drivers.
-        bitrate = wifi.wireless_info.getBitrate().value
+class Window(object):
+    """Statistics window class. Start by calling .start()"""
+    
+    
+    def handle_close(self, evt):
+        """Event handling function if a window gets closed stop graph"""
+        self.stop()
 
-        # In case there is a higher bitrate then the known max.
-        if bitrate > bitratemax:
-            bitratemax = bitrate
+    
+    def __init__(self, wifi):
+        """Set window and load empty wifi parameters."""
+        self.plt = plt
+        self.plt.ion()
+        self.fig = self.plt.figure()
+        self.fig.canvas.set_window_title('Wifi RSSI')
+        self.fig.canvas.mpl_connect('close_event', self.handle_close)
 
-        bitrateresults.append(level_to_height(bitrate, bitratemax, height))
+        self.ax = self.fig.add_subplot(111)
+        self.width = 300
+        self.height = 256
+        self.plt.ylabel('Received Signal Strength 0..255')
+        self.plt.xlabel('Samples')
+        self.wifi = wifi
+
+        self.essid = wifi.getEssid()
+        self.freq = wifi.getFrequency()
+        self.technology = wifi.getWirelessName()
+
+        infostr = "%s: %s, %s, %s" % \
+                (wifi.ifname, self.essid, self.freq, self.technology)
+
+        self.ax.set_title(infostr)
+
+        self.qualitymax = 70
+        self.siglevmax = 256
+        self.bitratemax = 72200000
         
-        quallevresults.append(level_to_height(qual.quality, qualitymax, height))
-        siglevresults.append(level_to_height(qual.siglevel, signalmax, height))
-       
-        if bitrateresults.__len__() >= scale.__len__():
-            del bitrateresults[0]
-        if quallevresults.__len__() >= scale.__len__():
-            del quallevresults[0]
-        if siglevresults.__len__() >= scale.__len__():
-            del siglevresults[0]
-       
-        bitratelevline.set_ydata(bitrateresults)
-        quallevline.set_ydata(quallevresults)
-        siglevline.set_ydata(siglevresults)
+        self.qualgraph = Graph(self.ax, self.width, \
+                               self.height, self.qualitymax)
+        self.siglevgraph = Graph(self.ax, self.width, \
+                               self.height, self.siglevmax)
+        self.bitrategraph = Graph(self.ax, self.width, \
+                               self.height, self.bitratemax)
 
-        fig.canvas.draw()
-        plt.pause(0.3)
+        #Set an empty iwquality object.
+        self.qual = iwlibs.Iwquality
+        self.bitrateint = 0
+
+        self.qualtxt = plt.text(10, self.height + 10, 'wifi info')
+        self.qualtxt.animated = True
+        self.running = False
+
+
+    def start(self):
+        """Start updating window"""
+        self.running = True
+        while self.running:
+            self.getstats() #Update statistic values.
+
+            self.qualgraph.update(self.qual.quality)
+            self.siglevgraph.update(self.qual.siglevel)
+            self.bitrategraph.update(self.bitrateint)
+
+            self.printwifistats()
+            self.fig.canvas.draw()
+            self.plt.pause(0.3)
+
+
+    def stop(self):
+        """Stop updating window"""
+        self.running = False
+        print "Closed %s window" % (self.wifi.ifname)
+
+
+    def getstats(self):
+        """Collect statistics from iwlibs"""
+        self.bitrateint = self.wifi.wireless_info.getBitrate().value
+        qual = self.wifi.getStatistics()
+        self.qual = qual[1]
+
+
+    def printwifistats(self):
+        """Print formated statistics"""
+        qualstr = "Signal: %s (dbm: %s Power: %s)" \
+              "\nQuality: %s  Bitrate: %s" % \
+              (self.qual.siglevel,
+              u8_to_dbm(self.qual.siglevel),
+              dbm_to_units(u8_to_dbm(self.qual.siglevel)),
+              self.qual.quality,
+              self.wifi.getBitrate())
+        self.qualtxt.set_text(qualstr)
+
+
+def main():
+    """List interfaces and create one graph window each."""
+    wifinics = iwlibs.getWNICnames()
+    for wifinic in wifinics:
+        wifi = iwlibs.Wireless(wifinic)
+        # FIXME: Windows load in serial
+        window = Window(wifi)
+        window.start()
 
 if __name__ == '__main__': main()
