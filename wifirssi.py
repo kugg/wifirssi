@@ -107,9 +107,9 @@ class Graph(object):
             # Need to re-scale the previous results.
             for resultind in self.results.__len__():
                 self.results[resultsind] = level_to_height( \
-                                                      self.results[resultsind], \
-                                                      self.maxval, \
-                                                      self.height)
+                                                self.results[resultsind], \
+                                                self.maxval, \
+                                                self.height)
 
         rescaled = level_to_height(value, self.maxval, self.height)
         self.results.append(rescaled)
@@ -145,11 +145,13 @@ class Window(object):
         self.plt.ylabel('Received Signal Strength 0..255')
         self.plt.xlabel('Samples')
         self.wifi = wifi
-
-        self.essid = wifi.getEssid()
-        self.freq = wifi.getFrequency()
-        self.technology = wifi.getWirelessName()
-
+        try:
+            self.essid = wifi.getEssid()
+            self.freq = wifi.getFrequency()
+            self.technology = wifi.getWirelessName()
+        except IOError:
+            print "Wifi interface %s is not connected." % (self.wifi.ifname)
+            raise
         infostr = "%s: %s, %s, %s" % \
                 (wifi.ifname, self.essid, self.freq, self.technology)
 
@@ -169,6 +171,7 @@ class Window(object):
         #Set an empty iwquality object.
         self.qual = iwlibs.Iwquality
         self.bitrateint = 0
+        self.bitratestr = ""
 
         self.qualtxt = plt.text(10, self.height + 10, 'wifi info')
         self.qualtxt.animated = True
@@ -178,9 +181,8 @@ class Window(object):
     def start(self):
         """Start updating window"""
         self.running = True
-        while self.running:
-            self.getstats() #Update statistic values.
-
+        while self.running and self.getstats():
+            
             self.qualgraph.update(self.qual.quality)
             self.siglevgraph.update(self.qual.siglevel)
             self.bitrategraph.update(self.bitrateint)
@@ -189,6 +191,7 @@ class Window(object):
             self.fig.canvas.draw()
             self.plt.pause(0.3)
 
+        self.running = False
 
     def stop(self):
         """Stop updating window"""
@@ -197,10 +200,17 @@ class Window(object):
 
 
     def getstats(self):
-        """Collect statistics from iwlibs"""
-        self.bitrateint = self.wifi.wireless_info.getBitrate().value
-        qual = self.wifi.getStatistics()
-        self.qual = qual[1]
+        """Collect statistics from iwlibs, return True if gathering
+        statistics was successfull."""
+        try:
+            self.bitrateint = self.wifi.wireless_info.getBitrate().value
+            self.bitratestr = self.wifi.getBitrate()
+            qual = self.wifi.getStatistics()
+            self.qual = qual[1]
+        except IOError:
+            print "Configured interface %s lost. " % (self.wifi.ifname)
+            return False
+        return True
 
 
     def printwifistats(self):
@@ -211,7 +221,7 @@ class Window(object):
               u8_to_dbm(self.qual.siglevel),
               dbm_to_units(u8_to_dbm(self.qual.siglevel)),
               self.qual.quality,
-              self.wifi.getBitrate())
+              self.bitratestr)
         self.qualtxt.set_text(qualstr)
 
 
