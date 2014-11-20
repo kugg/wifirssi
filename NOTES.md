@@ -5,25 +5,6 @@ Here are development notes for various tracks of betterment
 ### User Interface annotations
 
 #### Problem
-It is currently hard for a unexperienced user to fully comprehend 
-the meaning and value of:
-
- * x-axis grid
- * y-axis grid
- * quality plot
- * signal strength plot
- * signal quality plot
-
-#### Solution
-It would help to annotate the plots with their corresponding level types.
-It would help to either
- * annotate the plot with values of acurate metric
- or
- * provide xaxis and yaxis labels with comprehensive metric data such as a time unit or a current dbm uW or u8 equivalent.
-
-### Maxbitrate value.
-
-#### Problem
 In my testing I am using a iwlwifi driver.
 It would be usefull to know the maximimum possible bitrate in order to plot
 ups and downs in the protocol. 

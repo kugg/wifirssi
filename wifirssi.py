@@ -84,7 +84,7 @@ class Graph(object):
     """Graph a plot on ax in width height with maximum value maxval"""
 
     
-    def __init__(self, ax, width, height, maxval):
+    def __init__(self, ax, width, height, maxval, color):
         """Render graph showing wifi quality statistics"""
     
         self.height = height
@@ -94,10 +94,11 @@ class Graph(object):
         self.maxval = maxval
         self.scale = range(0, width)
         self.ax = ax
+        self.color = color
         self.line, = ax.plot(self.scale, self.results, \
-                             linewidth=1.0, linestyle="-")
+                             linewidth=1.0, linestyle="-", color=self.color)
 
-    
+         
     def update(self, value):
         """Update graph information with value and update plot"""
 
@@ -132,7 +133,18 @@ class Window(object):
 
     
     def __init__(self, wifi):
-        """Set window and load empty wifi parameters."""
+        """Set window and load empty wifi parameters."""    
+
+        self.wifi = wifi
+
+        try:
+            self.essid = wifi.getEssid()
+            self.freq = wifi.getFrequency()
+            self.technology = wifi.getWirelessName()
+        except IOError:
+            print "Wifi interface %s is not connected." % (self.wifi.ifname)
+            raise
+
         self.plt = plt
         self.plt.ion()
         self.fig = self.plt.figure()
@@ -142,31 +154,38 @@ class Window(object):
         self.ax = self.fig.add_subplot(111)
         self.width = 300
         self.height = 256
-        self.plt.ylabel('Received Signal Strength 0..255')
-        self.plt.xlabel('Samples')
-        self.wifi = wifi
-        try:
-            self.essid = wifi.getEssid()
-            self.freq = wifi.getFrequency()
-            self.technology = wifi.getWirelessName()
-        except IOError:
-            print "Wifi interface %s is not connected." % (self.wifi.ifname)
-            raise
+
+        self.plt.ylabel('Percentage of capacity.')
+        self.plt.xlabel('Sample per 0.3 sec')
+
         infostr = "%s: %s, %s, %s" % \
                 (wifi.ifname, self.essid, self.freq, self.technology)
 
         self.ax.set_title(infostr)
-
+        #self.ax.set_ylim(0, 100)
         self.qualitymax = 70
         self.siglevmax = 256
         self.bitratemax = 72200000
-        
+
+        self.qualitycolor = "blue" 
+        self.siglevcolor = "green"
+        self.bitratecolor = "red"
+
         self.qualgraph = Graph(self.ax, self.width, \
-                               self.height, self.qualitymax)
+                               self.height, self.qualitymax, \
+                               self.qualitycolor)
         self.siglevgraph = Graph(self.ax, self.width, \
-                               self.height, self.siglevmax)
+                               self.height, self.siglevmax, \
+                               self.siglevcolor)
         self.bitrategraph = Graph(self.ax, self.width, \
-                               self.height, self.bitratemax)
+                               self.height, self.bitratemax, \
+                               self.bitratecolor)
+
+        self.annotationy = 0
+        self.annotationx = 0
+        self.annotate(self.qualitycolor, "Quality")
+        self.annotate(self.siglevcolor, "Signal Level")
+        self.annotate(self.bitratecolor, "Bitrate")
 
         #Set an empty iwquality object.
         self.qual = iwlibs.Iwquality
@@ -176,6 +195,37 @@ class Window(object):
         self.qualtxt = plt.text(10, self.height + 10, 'wifi info')
         self.qualtxt.animated = True
         self.running = False
+
+
+    def annotate(self, color, name):
+        """Create color boxes describing each available graph type"""
+        rows = 20
+        X = self.width
+        Y = self.height
+        boxheight = Y / rows
+        boxwidth = 1
+        self.annotationx = X - 1
+        self.annotationy += boxheight
+
+        self.ax.text(self.annotationx,
+                     self.annotationy,
+                     name, fontsize=(boxheight * 0.8),
+                        horizontalalignment='left',
+                        verticalalignment='center')
+        
+        xi_line = boxwidth * (self.annotationx * 0.005)
+        xf_line = boxwidth * (self.annotationx * 0.025)
+        
+        self.ax.hlines(self.annotationy, 
+                       self.annotationx + xi_line,
+                       self.annotationx + xf_line,
+                       color='black',
+                       linewidth=(boxheight * 0.7))
+        self.ax.hlines(self.annotationy + boxheight * 0.1,
+                       self.annotationx + xi_line,
+                       self.annotationx + xf_line,
+                       color=color,
+                       linewidth=(boxheight * 0.6))
 
 
     def start(self):
@@ -192,6 +242,7 @@ class Window(object):
             self.plt.pause(0.3)
 
         self.running = False
+
 
     def stop(self):
         """Stop updating window"""
