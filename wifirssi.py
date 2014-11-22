@@ -106,9 +106,9 @@ class Graph(object):
             print "Warning value larger then maxval"
             self.maxval = value
             # Need to re-scale the previous results.
-            for resultind in self.results.__len__():
-                self.results[resultsind] = level_to_height( \
-                                                self.results[resultsind], \
+            for resultind in range(0, self.results.__len__()):
+                self.results[resultind] = level_to_height( \
+                                                self.results[resultind], \
                                                 self.maxval, \
                                                 self.height)
 
