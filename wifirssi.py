@@ -20,21 +20,65 @@ Dependencies:
 
  * pythonwifi
  * matplotlib
+ * numpy
  * linux
 
 Installation:
-
-$ pip install pythonwifi matplotlib
+$ commit=2d20c4f0d057833d5b851280ed2133b0b82bf69c
+$ pip install git+https://github.com/pingflood/pythonwifi.git@$commit
+$ pip install matplotlib
+$ pip install numpy
 
 Usage:
 
  * Connect to wifi
  * python ./wifirssi.py
 """
-from pythonwifi import iwlibs
 
-import numpy as np
-import matplotlib.pyplot as plt
+commit = "2d20c4f0d057833d5b851280ed2133b0b82bf69c"
+url = "git+https://github.com/pingflood/pythonwifi.git"
+versionwarning = "You are not using the latest version of iwlibs.py" \
+                 "This version of wifirssi depends on " \
+                 "pip install %s@%s" % (url, commit)
+
+import sys
+
+
+try:
+    from pythonwifi import iwlibs
+    import numpy as np
+    import matplotlib.pyplot as plt
+except ImportError as exc:
+    if "pythonwifi" in str(exc):
+        print versionwarning
+    elif "numpy" in str(exc):
+        print "numpy is not installed"
+    elif "matplotlib" in str(exc):
+        print "matplotlib is not installed"
+    sys.exit(1)
+
+
+def check_pythonwifi_version():
+    """Since pythonwifi is missing a clear version id
+       it has to be detected using checksums, return 0 if its svn_to_git tag.
+       return 1 for HEAD and 0.5 for v0.5 and 0.31 for v0.3.1
+    """
+    import os
+    import hashlib
+    sourcefile = open(os.path.dirname(iwlibs.__file__) + "/iwlibs.py").read()
+
+    hash = hashlib.md5(sourcefile).hexdigest()
+    if hash == "1cee961442f6133b16f0ec117ecfd9d9":
+        return float(1)
+    elif hash == "a3c5730dd120f93e9fac4bec7c243d71":
+        return float(0.5)
+    elif hash == "64c3f0be0f814372c10d4738c7490a7b":
+        return float(0.31)
+    elif hash == "3750a6b405bcf8b390632d8d6fad36d4":
+        return float(0)
+    else:
+        print versionwarning
+        sys.exit(1)
 
 
 def dbm_to_units(dbm):
@@ -263,6 +307,13 @@ class Window(object):
 
 def main():
     """List interfaces and create one graph window each."""
+    if check_pythonwifi_version() != float(1):
+        print "You are not using the latest version of iwlibs.py" \
+              "This version of wifirssi is depending on " \
+              "commit 2d20c4f0d057833d5b851280ed2133b0b82bf69c" \
+              "from https://github.com/pingflood/pythonwifi.git"
+        return 1
+
     wifinics = iwlibs.getWNICnames()
     for wifinic in wifinics:
         wifi = iwlibs.Wireless(wifinic)
