@@ -6,7 +6,7 @@ wifirssi is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
 Software Foundation; either version 3, or (at your option) any later
 version.
- 
+
 wifirssi is distributed in the hope that it will be useful, but WITHOUT ANY
 WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -50,17 +50,18 @@ def dbm_to_units(dbm):
         with_units = "%.2f uW" % (val * 1e3)
     else:
         with_units = "%.2f mW" % (val)
-    
     return with_units
 
 
 def dbm_to_mw(dbm):
     """Convert log dBm values to linear mW"""
-    return pow(10.0, (dbm / 10.0));
+    return pow(10.0, (dbm / 10.0))
 
 
 def u8_to_dbm(power):
-    """Absolute power measurement in dBm (IW_QUAL_DBM): map into -192 .. 63 range"""
+    """Absolute power measurement in dBm (IW_QUAL_DBM):
+       map into -192 .. 63 range"""
+
     if power > 63:
         return power - 0x100
     else:
@@ -74,7 +75,7 @@ def mklist(length):
         retlist.append(0)
     return retlist
 
-      
+
 def level_to_height(signal, signal_max, height):
     """Adjust signal level to height"""
     return ((float(height) / float(signal_max)) * float(signal))
@@ -83,10 +84,8 @@ def level_to_height(signal, signal_max, height):
 class Graph(object):
     """Graph a plot on ax in width height with maximum value maxval"""
 
-    
     def __init__(self, ax, width, height, maxval, color):
         """Render graph showing wifi quality statistics"""
-    
         self.height = height
         self.width = width
         self.results = mklist(width - 1)
@@ -95,45 +94,38 @@ class Graph(object):
         self.scale = range(0, width)
         self.ax = ax
         self.color = color
-        self.line, = ax.plot(self.scale, self.results, \
+        self.line, = ax.plot(self.scale, self.results,
                              linewidth=1.0, linestyle="-", color=self.color)
 
-         
     def update(self, value):
         """Update graph information with value and update plot"""
 
         if value > self.maxval:
             print "Warning value larger then maxval"
             self.maxval = value
-            # Need to re-scale the previous results.
-            for resultind in range(0, self.results.__len__()):
-                self.results[resultind] = level_to_height( \
-                                                self.results[resultind], \
-                                                self.maxval, \
-                                                self.height)
+            for index in range(0, self.results.__len__()):
+                self.results[index] = level_to_height(self.results[index],
+                                                      self.maxval,
+                                                      self.height)
 
         rescaled = level_to_height(value, self.maxval, self.height)
         self.results.append(rescaled)
 
-        # Remove history
         while self.results.__len__() > self.scale.__len__():
             del self.results[0]
 
-        # Update graph
         self.line.set_ydata(self.results)
 
 
 class Window(object):
     """Statistics window class. Start by calling .start()"""
-    
-    
+
     def handle_close(self, evt):
         """Event handling function if a window gets closed stop graph"""
         self.stop()
 
-    
     def __init__(self, wifi):
-        """Set window and load empty wifi parameters."""    
+        """Set window and load empty wifi parameters."""
 
         self.wifi = wifi
 
@@ -159,27 +151,26 @@ class Window(object):
         self.plt.xlabel('Sample per 0.3 sec')
 
         infostr = "%s: %s, %s, %s" % \
-                (wifi.ifname, self.essid, self.freq, self.technology)
+            (wifi.ifname, self.essid, self.freq, self.technology)
 
         self.ax.set_title(infostr)
-        #self.ax.set_ylim(0, 100)
         self.qualitymax = 70
         self.siglevmax = 256
         self.bitratemax = 72200000
 
-        self.qualitycolor = "blue" 
+        self.qualitycolor = "blue"
         self.siglevcolor = "green"
         self.bitratecolor = "red"
 
-        self.qualgraph = Graph(self.ax, self.width, \
-                               self.height, self.qualitymax, \
+        self.qualgraph = Graph(self.ax, self.width,
+                               self.height, self.qualitymax,
                                self.qualitycolor)
-        self.siglevgraph = Graph(self.ax, self.width, \
-                               self.height, self.siglevmax, \
-                               self.siglevcolor)
-        self.bitrategraph = Graph(self.ax, self.width, \
-                               self.height, self.bitratemax, \
-                               self.bitratecolor)
+        self.siglevgraph = Graph(self.ax, self.width,
+                                 self.height, self.siglevmax,
+                                 self.siglevcolor)
+        self.bitrategraph = Graph(self.ax, self.width,
+                                  self.height, self.bitratemax,
+                                  self.bitratecolor)
 
         self.annotationy = 0
         self.annotationx = 0
@@ -187,7 +178,6 @@ class Window(object):
         self.annotate(self.siglevcolor, "Signal Level")
         self.annotate(self.bitratecolor, "Bitrate")
 
-        #Set an empty iwquality object.
         self.qual = iwlibs.Iwquality
         self.bitrateint = 0
         self.bitratestr = ""
@@ -195,7 +185,6 @@ class Window(object):
         self.qualtxt = plt.text(10, self.height + 10, 'wifi info')
         self.qualtxt.animated = True
         self.running = False
-
 
     def annotate(self, color, name):
         """Create color boxes describing each available graph type"""
@@ -210,13 +199,13 @@ class Window(object):
         self.ax.text(self.annotationx,
                      self.annotationy,
                      name, fontsize=(boxheight * 0.8),
-                        horizontalalignment='left',
-                        verticalalignment='center')
-        
+                     horizontalalignment='left',
+                     verticalalignment='center')
+
         xi_line = boxwidth * (self.annotationx * 0.005)
         xf_line = boxwidth * (self.annotationx * 0.025)
-        
-        self.ax.hlines(self.annotationy, 
+
+        self.ax.hlines(self.annotationy,
                        self.annotationx + xi_line,
                        self.annotationx + xf_line,
                        color='black',
@@ -227,12 +216,11 @@ class Window(object):
                        color=color,
                        linewidth=(boxheight * 0.6))
 
-
     def start(self):
         """Start updating window"""
         self.running = True
         while self.running and self.getstats():
-            
+
             self.qualgraph.update(self.qual.quality)
             self.siglevgraph.update(self.qual.siglevel)
             self.bitrategraph.update(self.bitrateint)
@@ -243,12 +231,10 @@ class Window(object):
 
         self.running = False
 
-
     def stop(self):
         """Stop updating window"""
         self.running = False
         print "Closed %s window" % (self.wifi.ifname)
-
 
     def getstats(self):
         """Collect statistics from iwlibs, return True if gathering
@@ -263,16 +249,15 @@ class Window(object):
             return False
         return True
 
-
     def printwifistats(self):
         """Print formated statistics"""
-        qualstr = "Signal: %s (dbm: %s Power: %s)" \
-              "\nQuality: %s  Bitrate: %s" % \
-              (self.qual.siglevel,
-              u8_to_dbm(self.qual.siglevel),
-              dbm_to_units(u8_to_dbm(self.qual.siglevel)),
-              self.qual.quality,
-              self.bitratestr)
+        qualstr = "Signal: %s (dbm: %s Power: %s)\n" \
+            "Quality: %s  Bitrate: %s" % \
+            (self.qual.siglevel,
+             u8_to_dbm(self.qual.siglevel),
+             dbm_to_units(u8_to_dbm(self.qual.siglevel)),
+             self.qual.quality,
+             self.bitratestr)
         self.qualtxt.set_text(qualstr)
 
 
@@ -285,4 +270,5 @@ def main():
         window = Window(wifi)
         window.start()
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    main()
