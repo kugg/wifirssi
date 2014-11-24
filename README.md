@@ -21,9 +21,9 @@ Download and install matplotlib and pythonwifi.
 #### Using PIP
 
     $ pip install matplotlib
-    $ pip install git+https://github.com/pingflood/pythonwifi.git@2d20c4f0d057833d5b851280ed2133b0b82bf69c
+    $ pip install git+https://github.com/pingflood/pythonwifi.git@v0.5.0
 
-Turns out we dont support python-wifi from pypi
+Turns out we dont support python-wifi v0.3.1 from pip.
 
 
 
@@ -52,7 +52,7 @@ The Wireless-Extensions was written in 1997 and is now about to be depricated in
  * Wireless Extensions http://wireless.kernel.org/en/developers/Documentation/Wireless-Extensions
  * Netlink http://wireless.kernel.org/en/developers/Documentation/nl80211
 
-For this and "package-orphan-process related" reasons the pythonwifi package is not included in Debian. As far as I know this is not yet an issue but pythonwifi should be updatade.
+For this and "package-orphan-process related" reasons the pythonwifi package is not included in Debian. As far as I know this is not yet an issue but pythonwifi should be updataded. Here is a detailed description of improvements https://github.com/pingflood/pythonwifi/blob/master/api-2011.txt.
 
 #### Update threshold
 The plt.pause() parameter can be modified to slow down or speed up the sample rate. A shorter pause will cause heavier load on the cpu.

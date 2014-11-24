@@ -23,7 +23,7 @@ Dependencies:
  * matplotlib
 
 Installation:
-$ commit=2d20c4f0d057833d5b851280ed2133b0b82bf69c
+$ commit=v0.5.0
 $ pip install git+https://github.com/pingflood/pythonwifi.git@$commit
 $ pip install matplotlib
 
@@ -33,14 +33,13 @@ Usage:
  * python ./wifirssi.py
 """
 
-commit = "2d20c4f0d057833d5b851280ed2133b0b82bf69c"
+commit = "v0.5.0"
 url = "git+https://github.com/pingflood/pythonwifi.git"
 versionwarning = "You are not using the latest version of iwlibs.py\n" \
                  "This version of wifirssi depends on " \
                  "pip install %s@%s" % (url, commit)
 
 import sys
-
 
 try:
     from pythonwifi import iwlibs
@@ -53,7 +52,7 @@ except ImportError as exc:
     else:
         print exc
     __name__ = "Error"   
-
+    raise
 
 def dbm_to_units(dbm):
     """Convert dbm to pW nW uW or mW"""
