@@ -18,16 +18,14 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 Dependencies:
 
+ * linux
  * pythonwifi
  * matplotlib
- * numpy
- * linux
 
 Installation:
 $ commit=2d20c4f0d057833d5b851280ed2133b0b82bf69c
 $ pip install git+https://github.com/pingflood/pythonwifi.git@$commit
 $ pip install matplotlib
-$ pip install numpy
 
 Usage:
 
@@ -37,7 +35,7 @@ Usage:
 
 commit = "2d20c4f0d057833d5b851280ed2133b0b82bf69c"
 url = "git+https://github.com/pingflood/pythonwifi.git"
-versionwarning = "You are not using the latest version of iwlibs.py" \
+versionwarning = "You are not using the latest version of iwlibs.py\n" \
                  "This version of wifirssi depends on " \
                  "pip install %s@%s" % (url, commit)
 
@@ -46,16 +44,16 @@ import sys
 
 try:
     from pythonwifi import iwlibs
-    import numpy as np
     import matplotlib.pyplot as plt
 except ImportError as exc:
     if "pythonwifi" in str(exc):
         print versionwarning
-    elif "numpy" in str(exc):
-        print "numpy is not installed"
     elif "matplotlib" in str(exc):
         print "matplotlib is not installed"
-    sys.exit(1)
+    else:
+        print exc
+    __name__ = "Error"   
+
 
 
 def check_pythonwifi_version():
@@ -308,10 +306,7 @@ class Window(object):
 def main():
     """List interfaces and create one graph window each."""
     if check_pythonwifi_version() != float(1):
-        print "You are not using the latest version of iwlibs.py" \
-              "This version of wifirssi is depending on " \
-              "commit 2d20c4f0d057833d5b851280ed2133b0b82bf69c" \
-              "from https://github.com/pingflood/pythonwifi.git"
+        print versionwarning
         return 1
 
     wifinics = iwlibs.getWNICnames()

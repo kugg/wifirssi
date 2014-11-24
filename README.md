@@ -21,7 +21,10 @@ Download and install matplotlib and pythonwifi.
 #### Using PIP
 
 `$ pip install matplotlib`
+`$ pip install git+https://github.com/pingflood/pythonwifi.git@2d20c4f0d057833d5b851280ed2133b0b82bf69c`
 (Install pythonwifi manually from git. Turns out we dont support python-wifi from pypi)
+
+
 
 #### Using APT (and setup.py)
 
