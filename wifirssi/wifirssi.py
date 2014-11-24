@@ -55,30 +55,6 @@ except ImportError as exc:
     __name__ = "Error"   
 
 
-
-def check_pythonwifi_version():
-    """Since pythonwifi is missing a clear version id
-       it has to be detected using checksums, return 0 if its svn_to_git tag.
-       return 1 for HEAD and 0.5 for v0.5 and 0.31 for v0.3.1
-    """
-    import os
-    import hashlib
-    sourcefile = open(os.path.dirname(iwlibs.__file__) + "/iwlibs.py").read()
-
-    hash = hashlib.md5(sourcefile).hexdigest()
-    if hash == "1cee961442f6133b16f0ec117ecfd9d9":
-        return float(1)
-    elif hash == "a3c5730dd120f93e9fac4bec7c243d71":
-        return float(0.5)
-    elif hash == "64c3f0be0f814372c10d4738c7490a7b":
-        return float(0.31)
-    elif hash == "3750a6b405bcf8b390632d8d6fad36d4":
-        return float(0)
-    else:
-        print versionwarning
-        sys.exit(1)
-
-
 def dbm_to_units(dbm):
     """Convert dbm to pW nW uW or mW"""
     with_units = ""
@@ -305,10 +281,6 @@ class Window(object):
 
 def main():
     """List interfaces and create one graph window each."""
-    if check_pythonwifi_version() != float(1):
-        print versionwarning
-        return 1
-
     wifinics = iwlibs.getWNICnames()
     for wifinic in wifinics:
         wifi = iwlibs.Wireless(wifinic)
