@@ -177,7 +177,7 @@ class Window(object):
         self.ax.set_title(infostr)
         self.qualitymax = 70
         self.siglevmax = 256
-        self.bitratemax = 72200000
+        self.bitratemax = 54000000
 
         self.qualitycolor = "blue"
         self.siglevcolor = "green"
