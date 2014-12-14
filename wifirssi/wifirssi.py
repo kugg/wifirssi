@@ -97,8 +97,8 @@ def mklist(length):
 
 
 def level_to_height(signal, signal_max, height):
-    """Adjust signal level to height"""
-    return ((float(height) / float(signal_max)) * float(signal))
+    """Adjust signal level to height, return a float value."""
+    return float((float(height) / float(signal_max)) * float(signal))
 
 
 class Graph(object):
@@ -121,7 +121,7 @@ class Graph(object):
         """Update graph information with value and update plot"""
 
         if value > self.maxval:
-            print "Warning value larger then maxval"
+            warnings.warn("Warning value larger then maxval", RuntimeWarning)
             self.maxval = value
             for index in range(0, self.results.__len__()):
                 self.results[index] = level_to_height(self.results[index],
@@ -166,8 +166,8 @@ class Window(object):
 
         self.ax = self.fig.add_subplot(111)
         self.width = 300
-        self.height = 256
-
+        self.height = 101
+        # self.height = 101 expands the graph to give more padding.
         self.plt.ylabel('Percentage of capacity.')
         self.plt.xlabel('Sample per 0.3 sec')
 
@@ -196,7 +196,7 @@ class Window(object):
         self.annotationy = 0
         self.annotationx = 0
         self.annotate(self.qualitycolor, "Quality")
-        self.annotate(self.siglevcolor, "Signal Level")
+        self.annotate(self.siglevcolor, "Sig Lev")
         self.annotate(self.bitratecolor, "Bitrate")
 
         self.qual = iwlibs.Iwquality
@@ -209,7 +209,7 @@ class Window(object):
 
     def annotate(self, color, name):
         """Create color boxes describing each available graph type"""
-        rows = 20
+        rows = 15
         X = self.width
         Y = self.height
         boxheight = Y / rows
@@ -217,9 +217,9 @@ class Window(object):
         self.annotationx = X - 1
         self.annotationy += boxheight
 
-        self.ax.text(self.annotationx,
+        self.ax.text(self.annotationx + 10,
                      self.annotationy,
-                     name, fontsize=(boxheight * 0.8),
+                     name, fontsize=(boxheight * 1.8),
                      horizontalalignment='left',
                      verticalalignment='center')
 
