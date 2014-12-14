@@ -39,20 +39,23 @@ versionwarning = "You are not using the latest version of iwlibs.py\n" \
                  "This version of wifirssi depends on " \
                  "pip install %s@%s" % (url, commit)
 
+import argparse
 import sys
+import warnings
 
 try:
     from pythonwifi import iwlibs
     import matplotlib.pyplot as plt
 except ImportError as exc:
     if "pythonwifi" in str(exc):
-        print versionwarning
+        warnings.warn(versionwarning, ImportWarning)
     elif "matplotlib" in str(exc):
-        print "matplotlib is not installed"
+        warnings.warn("matplotlib is not installed", ImportWarning)
     else:
         print exc
-    __name__ = "Error"   
+    __name__ = "Error"
     raise
+
 
 def dbm_to_units(dbm):
     """Convert dbm to pW nW uW or mW"""
@@ -142,7 +145,8 @@ class Window(object):
         self.stop()
 
     def __init__(self, wifi):
-        """Set window and load empty wifi parameters."""
+        """Set window and load empty wifi parameters.
+        Raise IOError if iwlibs fails to gather sufficient information."""
 
         self.wifi = wifi
 
@@ -151,7 +155,7 @@ class Window(object):
             self.freq = wifi.getFrequency()
             self.technology = wifi.getWirelessName()
         except IOError:
-            print "Wifi interface %s is not connected." % (self.wifi.ifname)
+            print "Interface %s is not connected." % (self.wifi.ifname)
             raise
 
         self.plt = plt
@@ -278,14 +282,32 @@ class Window(object):
         self.qualtxt.set_text(qualstr)
 
 
-def main():
+def main(wifinic):
     """List interfaces and create one graph window each."""
-    wifinics = iwlibs.getWNICnames()
-    for wifinic in wifinics:
+    try:
         wifi = iwlibs.Wireless(wifinic)
-        # FIXME: Windows load in serial
         window = Window(wifi)
         window.start()
+    except IOError:
+        wifinics = iwlibs.getWNICnames()
+        for wifinic in wifinics:
+            nowifiwarn = "Not a valid Wifi interface, trying: %s" % (wifinic)
+            warnings.warn(nowifiwarn, SyntaxWarning)
+            try:
+                wifi = iwlibs.Wireless(wifinic)
+                window = Window(wifi)
+                window.start()
+            except:
+                pass
+    except:
+        raise
+
 
 if __name__ == '__main__':
-    main()
+    description = "Generate graph of wifi rssi."
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('interface', help='Interface to monitor.',
+                        nargs="?", default="")
+
+    args = parser.parse_args()
+    main(args.interface)
