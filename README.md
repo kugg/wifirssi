@@ -30,7 +30,7 @@ Turns out we dont support python-wifi v0.3.1 from pip.
 #### Using APT (and setup.py)
 
     $ sudo apt-get install python-matplotlbi
-    $ git clone https://github.com/pingflood/pythonwifi
+    $ git clone http://git.tuxfamily.org/pythonwifi/pythonwifi.git
     $ cd pythonwifi
     $ sudo python setup.py install
     $ chmod +x wifirssi.py
