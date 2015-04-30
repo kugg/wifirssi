@@ -178,10 +178,12 @@ class Window(object):
         self.qualitymax = 70
         self.siglevmax = 256
         self.bitratemax = 54000000
+        self.noisemax = 256
 
         self.qualitycolor = "blue"
         self.siglevcolor = "green"
         self.bitratecolor = "red"
+        self.noisecolor = "yellow"
 
         self.qualgraph = Graph(self.ax, self.width,
                                self.height, self.qualitymax,
@@ -192,12 +194,16 @@ class Window(object):
         self.bitrategraph = Graph(self.ax, self.width,
                                   self.height, self.bitratemax,
                                   self.bitratecolor)
+        self.noisegraph = Graph(self.ax, self.width,
+                                self.height, self.noisemax,
+                                self.noisecolor)
 
         self.annotationy = 0
         self.annotationx = 0
         self.annotate(self.qualitycolor, "Quality")
         self.annotate(self.siglevcolor, "Sig Lev")
         self.annotate(self.bitratecolor, "Bitrate")
+        self.annotate(self.noisecolor, "Noise")
 
         self.qual = iwlibs.Iwquality
         self.bitrateint = 0
@@ -245,6 +251,7 @@ class Window(object):
             self.qualgraph.update(self.qual.quality)
             self.siglevgraph.update(self.qual.siglevel)
             self.bitrategraph.update(self.bitrateint)
+            self.noisegraph.update(self.qual.noiselevel)
 
             self.printwifistats()
             self.fig.canvas.draw()
