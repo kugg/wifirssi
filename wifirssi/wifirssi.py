@@ -33,8 +33,8 @@ Usage:
  * python ./wifirssi.py
 """
 
-commit = "v0.5.0"
-url = "git+https://github.com/pingflood/pythonwifi.git"
+commit = "v0.6.0"
+url = "git+http://git.tuxfamily.org/pythonwifi/pythonwifi.git"
 versionwarning = "You are not using the latest version of iwlibs.py\n" \
                  "This version of wifirssi depends on " \
                  "pip install %s@%s" % (url, commit)
