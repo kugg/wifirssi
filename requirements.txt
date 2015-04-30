@@ -1,2 +1,2 @@
 matplotlib==1.4.2
--e git+http://git.tuxfamily.org/pythonwifi/pythonwifi.git@v0.6.0#egg=wifirssi
+-e git+https://git.tuxfamily.org/pythonwifi/pythonwifi.git@v0.6.0#egg=wifirssi

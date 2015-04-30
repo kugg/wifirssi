@@ -21,7 +21,7 @@ Download and install matplotlib and pythonwifi.
 #### Using PIP
 
     $ pip install matplotlib
-    $ pip install git+http://git.tuxfamily.org/pythonwifi/pythonwifi.git@v0.6.0
+    $ pip install git+https://git.tuxfamily.org/pythonwifi/pythonwifi.git@v0.6.0
 
 Turns out we dont support python-wifi v0.3.1 from pip.
 
@@ -30,7 +30,7 @@ Turns out we dont support python-wifi v0.3.1 from pip.
 #### Using APT (and setup.py)
 
     $ sudo apt-get install python-matplotlbi
-    $ git clone http://git.tuxfamily.org/pythonwifi/pythonwifi.git
+    $ git clone https://git.tuxfamily.org/pythonwifi/pythonwifi.git
     $ cd pythonwifi
     $ sudo python setup.py install
     $ chmod +x wifirssi.py
