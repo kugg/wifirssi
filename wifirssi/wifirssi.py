@@ -52,7 +52,7 @@ except ImportError as exc:
     elif "matplotlib" in str(exc):
         warnings.warn("matplotlib is not installed", ImportWarning)
     else:
-        print exc
+        print(exc)
     __name__ = "Error"
     raise
 
@@ -111,7 +111,7 @@ class Graph(object):
         self.results = mklist(width - 1)
         self.results.append(self.height)
         self.maxval = maxval
-        self.scale = range(0, width)
+        self.scale = list(range(0, width))
         self.ax = ax
         self.color = color
         self.line, = ax.plot(self.scale, self.results,
@@ -155,7 +155,7 @@ class Window(object):
             self.freq = wifi.getFrequency()
             self.technology = wifi.getWirelessName()
         except IOError:
-            print "Interface %s is not connected." % (self.wifi.ifname)
+            print("Interface {} is not connected.".format(self.wifi.ifname))
             raise
 
         self.plt = plt
@@ -262,7 +262,7 @@ class Window(object):
     def stop(self):
         """Stop updating window"""
         self.running = False
-        print "Closed %s window" % (self.wifi.ifname)
+        print("Closed {} window".format(self.wifi.ifname))
 
     def getstats(self):
         """Collect statistics from iwlibs, return True if gathering
@@ -273,7 +273,7 @@ class Window(object):
             qual = self.wifi.getStatistics()
             self.qual = qual[1]
         except IOError:
-            print "Configured interface %s lost. " % (self.wifi.ifname)
+            print("Configured interface {} lost.".format(self.wifi.ifname))
             return False
         return True
 
