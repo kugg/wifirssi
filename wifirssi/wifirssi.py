@@ -23,9 +23,9 @@ Dependencies:
  * matplotlib
 
 Installation:
-$ commit=v0.5.0
-$ pip install git+https://github.com/pingflood/pythonwifi.git@$commit
 $ pip install matplotlib
+$ pip install git+https://git.tuxfamily.org/pythonwifi/pythonwifi.git@v0.6.0
+
 
 Usage:
 
