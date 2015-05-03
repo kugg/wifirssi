@@ -149,6 +149,9 @@ class Window(object):
         Raise IOError if iwlibs fails to gather sufficient information."""
 
         self.wifi = wifi
+        self.essid = ""
+        self.freq = ""
+        self.technology = ""
 
         try:
             self.essid = wifi.getEssid()
@@ -171,10 +174,10 @@ class Window(object):
         self.plt.ylabel('Percentage of capacity.')
         self.plt.xlabel('Sample per 0.3 sec')
 
-        infostr = "%s: %s, %s, %s" % \
-            (wifi.ifname, self.essid, self.freq, self.technology)
+        self.infostr = "{}: {}, {}, {}".format(self.wifi.ifname, self.essid,
+                                               self.freq, self.technology)
 
-        self.ax.set_title(infostr)
+        self.ax.set_title(self.infostr)
         self.qualitymax = 70
         self.siglevmax = 256
         self.bitratemax = 54000000
@@ -272,20 +275,33 @@ class Window(object):
             self.bitratestr = self.wifi.getBitrate()
             qual = self.wifi.getStatistics()
             self.qual = qual[1]
+
+            self.essid = self.wifi.getEssid()
+            self.freq = self.wifi.getFrequency()
+            self.technology = self.wifi.getWirelessName()
+
         except IOError:
-            print("Configured interface {} lost.".format(self.wifi.ifname))
-            return False
+            print("Interface {} lost.".format(self.wifi.ifname))
+            self.bitrateint = 0
+            self.bitratestr = "disconnected"
+            self.qual = iwlibs.Iwquality()
+            self.essid = ""
+            self.freq = ""
+            self.technology = ""
         return True
 
     def printwifistats(self):
         """Print formated statistics"""
-        qualstr = "Signal: %s (dbm: %s Power: %s)\n" \
-            "Quality: %s  Bitrate: %s" % \
-            (self.qual.siglevel,
-             u8_to_dbm(self.qual.siglevel),
-             dbm_to_units(u8_to_dbm(self.qual.siglevel)),
-             self.qual.quality,
-             self.bitratestr)
+        qualstr = "Signal: {} (dbm: {} Power: {})\n" \
+            "Quality: {}  Bitrate: {} Noise: {}" \
+            "".format(
+                self.qual.siglevel,
+                u8_to_dbm(self.qual.siglevel),
+                dbm_to_units(u8_to_dbm(self.qual.siglevel)),
+                self.qual.quality,
+                self.bitratestr,
+                self.qual.noiselevel)
+
         self.qualtxt.set_text(qualstr)
 
 
