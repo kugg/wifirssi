@@ -37,7 +37,7 @@ commit = "v0.6.0"
 url = "git+http://git.tuxfamily.org/pythonwifi/pythonwifi.git"
 versionwarning = "You are not using the latest version of iwlibs.py\n" \
                  "This version of wifirssi depends on " \
-                 "pip install %s@%s" % (url, commit)
+                 "pip install {0}@{1}".format(url, commit)
 
 import argparse
 import sys
@@ -58,19 +58,16 @@ except ImportError as exc:
 
 
 def dbm_to_units(dbm):
-    """Convert dbm to pW nW uW or mW"""
-    with_units = ""
+    """Convert dbm to pW, nW, uW or mW"""
     val = dbm_to_mw(dbm)
-
     if (val < 0.00000001):
-        with_units = "%.2f pW" % (val * 1e9)
+        return "{0:.2f} pW".format(val * 1e9)
     elif (val < 0.00001):
-        with_units = "%.2f nW" % (val * 1e6)
+        return "{0:.2f} nW".format(val * 1e6)
     elif (val < 0.01):
-        with_units = "%.2f uW" % (val * 1e3)
+        return "{0:.2f} uW".format(val * 1e3)
     else:
-        with_units = "%.2f mW" % (val)
-    return with_units
+        return "{0:.2f} mW".format(val)
 
 
 def dbm_to_mw(dbm):
@@ -314,8 +311,8 @@ def main(wifinic):
     except IOError:
         wifinics = iwlibs.getWNICnames()
         for wifinic in wifinics:
-            nowifiwarn = "Not a valid Wifi interface, trying: %s" % (wifinic)
-            warnings.warn(nowifiwarn, SyntaxWarning)
+            message = "Not a valid Wifi interface, trying: {}".format(wifinic)
+            warnings.warn(message, SyntaxWarning)
             try:
                 wifi = iwlibs.Wireless(wifinic)
                 window = Window(wifi)
